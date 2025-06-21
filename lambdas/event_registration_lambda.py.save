@@ -1,0 +1,35 @@
+import boto3
+import json
+
+s3 = boto3.client('s3')
+sns = boto3.client('sns')
+
+def lambda_handler(event, context):
+    body = json.loads(event['body'])
+    name = body['name']
+    date = body['date']
+
+    bucket = 'event-announcement-azhar'
+    key = 'events.json'
+
+    # Get existing events from S3
+    file = s3.get_object(Bucket=bucket, Key=key)
+    events = json.loads(file['Body'].read().decode('utf-8'))
+
+    # Add new event
+    events.append({"name": name, "date": date})
+
+    # Upload updated JSON back to S3
+    s3.put_object(Bucket=bucket, Key=key, Body=json.dumps(events).encode('utf-8'))
+
+    # Publish SNS notification
+    sns.publish(
+        TopicArn="arn:aws:sns:us-east-1:742846646803742846646803:event-announcement-topic",
+        Message=f"📢 New Event: {name} scheduled on {date}",
+        Subject="🎉 New Event Alert"
+    )
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps({'message': f'Event {name} added and subscribers notified'})
+    }

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Event Announcements</title>
+</head>
+<body>
+  <h1>Upcoming Events</h1>
+  <div id="events"></div>
+
+  <script>
+    fetch('events.json')
+      .then(response => response.json())
+      .then(data => {
+        const container = document.getElementById('events');
+        if (data.length === 0) {
+          container.innerHTML = "<p>No events yet!</p>";
+        } else {
+          data.forEach(event => {
+            const e = document.createElement('div');
+            e.innerHTML = `<strong>${event.name}</strong> on ${event.date}`;
+            container.appendChild(e);
+          });
+        }
+      });
+  </script>
+</body>
+</html>
